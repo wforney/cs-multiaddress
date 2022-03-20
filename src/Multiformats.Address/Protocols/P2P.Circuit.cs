@@ -1,20 +1,22 @@
-﻿namespace Multiformats.Address.Protocols
+﻿namespace Multiformats.Address.Protocols;
+
+public class P2PCircuit : MultiaddressProtocol
 {
-    public class P2PCircuit : MultiaddressProtocol
+    public P2PCircuit()
+        : base("p2p-circuit", 290, 0)
     {
-        public P2PCircuit()
-            : base("p2p-circuit", 290, 0)
-        {
-        }
+    }
 
-        public override void Decode(string value)
-        {
-        }
+    public override void Decode(string value)
+    {
+    }
 
-        public override void Decode(byte[] bytes)
-        {
-        }
+    public override void Decode(byte[] bytes)
+    {
+    }
 
-        public override byte[] ToBytes() => EmptyBuffer;
+    public override byte[] ToBytes()
+    {
+        return EmptyBuffer;
     }
 }

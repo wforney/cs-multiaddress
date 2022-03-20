@@ -1,16 +1,15 @@
-﻿namespace Multiformats.Address.Protocols
-{
-    public class SCTP : Number
-    {
-        public SCTP()
-            : base("sctp", 132)
-        {
-        }
+﻿namespace Multiformats.Address.Protocols;
 
-        public SCTP(int port)
-            : this()
-        {
-            Value = port;
-        }
+public class SCTP : Number
+{
+    public SCTP()
+        : base("sctp", 132)
+    {
+    }
+
+    public SCTP(int port)
+        : this()
+    {
+        Value = port;
     }
 }
