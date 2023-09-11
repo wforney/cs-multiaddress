@@ -1,29 +1,39 @@
-﻿namespace Multiformats.Address.Protocols;
+namespace Multiformats.Address.Protocols;
+
 using BinaryEncoding;
 using System;
 using System.Linq;
 using System.Text;
 
-public class Unix : MultiaddressProtocol
+/// <summary>
+/// Unix
+/// </summary>
+public record Unix : MultiaddressProtocol
 {
-    public string Path => Value != null ? (string)Value : string.Empty;
+    /// <summary>
+    /// Gets the path.
+    /// </summary>
+    public string Path => this.Value is null ? string.Empty : (string)this.Value;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Unix"/> class.
+    /// </summary>
     public Unix()
         : base("unix", 400, -1)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Unix"/> class.
+    /// </summary>
+    /// <param name="address">The address.</param>
     public Unix(string address)
-        : this()
-    {
-        Value = address;
-    }
+        : this() => this.Value = address;
 
-    public override void Decode(string value)
-    {
-        Value = value;
-    }
+    /// <inheritdoc/>
+    public override void Decode(string value) => this.Value = value;
 
+    /// <inheritdoc/>
     public override void Decode(byte[] bytes)
     {
         int n = Binary.Varint.Read(bytes, 0, out uint size);
@@ -40,12 +50,15 @@ public class Unix : MultiaddressProtocol
 
         string s = Encoding.UTF8.GetString(bytes, n, bytes.Length - n);
 
-        Value = s.Substring(1);
+        this.Value = s[1..];
     }
 
+    /// <inheritdoc/>
     public override byte[] ToBytes()
     {
-        return Binary.Varint.GetBytes((uint)Encoding.UTF8.GetByteCount((string)Value))
-            .Concat(Encoding.UTF8.GetBytes((string)Value)).ToArray();
+        return Binary.Varint.GetBytes(
+            (uint)Encoding.UTF8.GetByteCount((string?)this.Value ?? string.Empty))
+            .Concat(Encoding.UTF8.GetBytes((string?)this.Value ?? string.Empty))
+            .ToArray();
     }
 }

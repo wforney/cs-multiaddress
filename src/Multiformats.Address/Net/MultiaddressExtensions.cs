@@ -16,26 +16,19 @@ public static class MultiaddressExtensions
 {
     /// <summary>Gets the local multiaddress.</summary>
     /// <param name="socket">The socket.</param>
-    /// <returns></returns>
-    public static Multiaddress GetLocalMultiaddress(this Socket socket)
-    {
-        return socket.LocalEndPoint.ToMultiaddress(socket.ProtocolType);
-    }
+    public static Multiaddress GetLocalMultiaddress(this Socket socket) => socket.LocalEndPoint!.ToMultiaddress(socket.ProtocolType);
 
     /// <summary>Gets the remote multiaddress.</summary>
     /// <param name="socket">The socket.</param>
-    /// <returns></returns>
-    public static Multiaddress GetRemoteMultiaddress(this Socket socket)
-    {
-        return socket.RemoteEndPoint.ToMultiaddress(socket.ProtocolType);
-    }
+    public static Multiaddress GetRemoteMultiaddress(this Socket socket) => socket.RemoteEndPoint!.ToMultiaddress(socket.ProtocolType);
 
     /// <summary>Converts to multiaddress.</summary>
     /// <param name="ep">The ep.</param>
     /// <param name="protocolType">Type of the protocol.</param>
-    /// <returns></returns>
     public static Multiaddress ToMultiaddress(this EndPoint ep, ProtocolType protocolType)
     {
+        ArgumentNullException.ThrowIfNull(ep);
+
         Multiaddress ma = new();
 
         IPEndPoint ip = (IPEndPoint)ep;
@@ -43,58 +36,75 @@ public static class MultiaddressExtensions
         {
             if (ip.AddressFamily == AddressFamily.InterNetwork)
             {
-                ma.Add<IP4>(ip.Address);
+                _ = ma.Add<IP4>(ip.Address);
             }
 
             if (ip.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                ma.Add<IP6>(ip.Address);
+                _ = ma.Add<IP6>(ip.Address);
             }
 
             if (protocolType == ProtocolType.Tcp)
             {
-                ma.Add<TCP>((ushort)ip.Port);
+                _ = ma.Add<TCP>((ushort)ip.Port);
             }
 
             if (protocolType == ProtocolType.Udp)
             {
-                ma.Add<UDP>((ushort)ip.Port);
+                _ = ma.Add<UDP>((ushort)ip.Port);
             }
         }
 
         return ma;
     }
 
+    /// <summary>
+    /// Converts the specified <paramref name="ip"/> to a <see cref="Multiaddress"/>.
+    /// </summary>
+    /// <param name="ip">The IP address.</param>
+    /// <returns>The <see cref="Multiaddress"/>.</returns>
     public static Multiaddress ToMultiaddress(this IPAddress ip)
     {
         Multiaddress ma = new();
         if (ip.AddressFamily == AddressFamily.InterNetwork)
         {
-            ma.Add<IP4>(ip);
+            _ = ma.Add<IP4>(ip);
         }
 
         if (ip.AddressFamily == AddressFamily.InterNetworkV6)
         {
-            ma.Add<IP6>(ip);
+            _ = ma.Add<IP6>(ip);
         }
 
         return ma;
     }
 
-    public static IPEndPoint ToEndPoint(this Multiaddress ma)
-    {
-        return ToEndPoint(ma, out ProtocolType pt);
-    }
+    /// <summary>
+    /// Converts the specified <paramref name="ma"/> to a <see cref="IPEndPoint"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <returns>The <see cref="IPEndPoint"/>.</returns>
+    public static IPEndPoint ToEndPoint(this Multiaddress ma) => ToEndPoint(ma, out _);
 
-    public static IPEndPoint ToEndPoint(this Multiaddress ma, out ProtocolType protocolType)
-    {
-        return ToEndPoint(ma, out protocolType, out SocketType st);
-    }
+    /// <summary>
+    /// Converts the specified <paramref name="ma"/> to a <see cref="IPEndPoint"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <param name="protocolType">The type of protocol.</param>
+    /// <returns>The <see cref="IPEndPoint"/>.</returns>
+    public static IPEndPoint ToEndPoint(this Multiaddress ma, out ProtocolType protocolType) => ToEndPoint(ma, out protocolType, out _);
 
+    /// <summary>
+    /// Converts the specified <paramref name="ma"/> to a <see cref="IPEndPoint"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <param name="protocolType">The type of protocol.</param>
+    /// <param name="socketType">The type of socket.</param>
+    /// <returns>The <see cref="IPEndPoint"/>.</returns>
     public static IPEndPoint ToEndPoint(this Multiaddress ma, out ProtocolType protocolType, out SocketType socketType)
     {
-        IPAddress addr = null;
-        IP ip = ma.Protocols.OfType<IP4>().SingleOrDefault();
+        IPAddress? addr = null;
+        IP? ip = ma.Protocols.OfType<IP4>().SingleOrDefault();
         if (ip is not null)
         {
             addr = (IPAddress)ip.Value;
@@ -109,7 +119,7 @@ public static class MultiaddressExtensions
         }
 
         int? port = null;
-        Number n = ma.Protocols.OfType<TCP>().SingleOrDefault();
+        Number? n = ma.Protocols.OfType<TCP>().SingleOrDefault();
         if (n is not null)
         {
             port = (ushort)n.Value;
@@ -135,11 +145,19 @@ public static class MultiaddressExtensions
         return new IPEndPoint(addr ?? IPAddress.Any, port ?? 0);
     }
 
-    public static Socket CreateSocket(this Multiaddress ma)
-    {
-        return CreateSocket(ma, out IPEndPoint ep);
-    }
+    /// <summary>
+    /// Creates a socket from the specified <paramref name="ma"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <returns>The socket.</returns>
+    public static Socket CreateSocket(this Multiaddress ma) => CreateSocket(ma, out _);
 
+    /// <summary>
+    /// Creates a socket from the specified <paramref name="ma"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <param name="ep">The endpoint.</param>
+    /// <returns>The socket.</returns>
     public static Socket CreateSocket(this Multiaddress ma, out IPEndPoint ep)
     {
         ep = ma.ToEndPoint(out ProtocolType pt, out SocketType st);
@@ -147,6 +165,11 @@ public static class MultiaddressExtensions
         return new Socket(ep.AddressFamily, st, pt);
     }
 
+    /// <summary>
+    /// Creates a connection from the specified <paramref name="ma"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <returns>The socket.</returns>
     public static Socket CreateConnection(this Multiaddress ma)
     {
         Socket socket = CreateSocket(ma, out IPEndPoint ep);
@@ -154,6 +177,11 @@ public static class MultiaddressExtensions
         return socket;
     }
 
+    /// <summary>
+    /// Creates a connection from the specified <paramref name="ma"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <returns>The socket.</returns>
     public static Task<Socket> CreateConnectionAsync(this Multiaddress ma)
     {
         Socket socket = CreateSocket(ma, out IPEndPoint ep);
@@ -166,18 +194,21 @@ public static class MultiaddressExtensions
 
         try
         {
-            socket.BeginConnect(ep, ar =>
-            {
-                try
+            socket.BeginConnect(
+                ep,
+                ar =>
                 {
-                    socket.EndConnect(ar);
-                    tcs.TrySetResult(socket);
-                }
-                catch (Exception e)
-                {
-                    tcs.TrySetException(e);
-                }
-            }, null);
+                    try
+                    {
+                        socket.EndConnect(ar);
+                        tcs.TrySetResult(socket);
+                    }
+                    catch (Exception e)
+                    {
+                        tcs.TrySetException(e);
+                    }
+                },
+                null);
         }
         catch (Exception e)
         {
@@ -188,6 +219,12 @@ public static class MultiaddressExtensions
 #endif
     }
 
+    /// <summary>
+    /// Creates a listener from the specified <paramref name="ma"/>.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <param name="backlog">The backlog.</param>
+    /// <returns>The socket.</returns>
     public static Socket CreateListener(this Multiaddress ma, int backlog = 10)
     {
         Socket socket = CreateSocket(ma, out IPEndPoint ep);
@@ -196,35 +233,37 @@ public static class MultiaddressExtensions
         return socket;
     }
 
-    public static bool IsThinWaist(this Multiaddress ma)
-    {
-        if (!ma.Protocols.Any())
-        {
-            return false;
-        }
+    /// <summary>
+    /// Returns a value indicating whether the specified <paramref name="ma"/> is thin waist.
+    /// </summary>
+    /// <param name="ma">The <see cref="Multiaddress"/>.</param>
+    /// <returns>A value indicating whether the specified <paramref name="ma"/> is thin waist.</returns>
+    public static bool IsThinWaist(this Multiaddress ma) =>
+        ma.Protocols.Any() &&
+        !(ma.Protocols[0] is not IP4 and not IP6) &&
+        (ma.Protocols.Count == 1 ||
+        ma.Protocols[1] is TCP ||
+        ma.Protocols[1] is UDP ||
+        ma.Protocols[1] is IP4 ||
+        ma.Protocols[1] is IP6);
 
-        if (!(ma.Protocols[0] is IP4) && !(ma.Protocols[0] is IP6))
-        {
-            return false;
-        }
-
-        if (ma.Protocols.Count == 1)
-        {
-            return true;
-        }
-
-        return ma.Protocols[1] is TCP || ma.Protocols[1] is UDP ||
-               ma.Protocols[1] is IP4 || ma.Protocols[1] is IP6;
-    }
-
-    public static IEnumerable<Multiaddress> GetMultiaddresses(this NetworkInterface nic)
-    {
-        return nic
+    /// <summary>
+    /// Gets the <see cref="IEnumerable{Multiaddress}"/> for the specified <see cref="NetworkInterface"/>.
+    /// </summary>
+    /// <param name="nic">The network interface.</param>
+    /// <returns>The <see cref="IEnumerable{Multiaddress}"/>.</returns>
+    public static IEnumerable<Multiaddress> GetMultiaddresses(this NetworkInterface nic) =>
+        nic
             .GetIPProperties()
             .UnicastAddresses
             .Select(addr => addr.Address.ToMultiaddress());
-    }
 
+    /// <summary>
+    /// Returns the <see cref="IEnumerable{Multiaddress}"/> where the protocols match.
+    /// </summary>
+    /// <param name="match">The <see cref="Multiaddress"/>.</param>
+    /// <param name="addrs">The addresses to match.</param>
+    /// <returns>The <see cref="IEnumerable{Multiaddress}"/>.</returns>
     public static IEnumerable<Multiaddress> Match(this Multiaddress match, params Multiaddress[] addrs)
     {
         foreach (Multiaddress a in addrs.Where(x => match.Protocols.Count == x.Protocols.Count))

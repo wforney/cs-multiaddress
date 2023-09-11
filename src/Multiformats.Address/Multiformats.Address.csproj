@@ -8,19 +8,25 @@
     <Description>Multiformat addresses</Description>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IncludeSymbols>True</IncludeSymbols>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
     <PackageIconUrl>https://cdn.rawgit.com/multiformats/website/116894f6/favicon.png</PackageIconUrl>
     <PackageId>Multiformats.Address</PackageId>
     <PackageLicenseUrl>https://github.com/multiformats/cs-multiaddress/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/multiformats/cs-multiaddress</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>multiaddress</PackageTags>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'net461' ">$(PackageTargetFallback);netstandard;portable-net461+win8</PackageTargetFallback>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/multiformats/cs-multiaddress</RepositoryUrl>
     <RuntimeIdentifiers>win10-x64;osx-x64;ubuntu-x64</RuntimeIdentifiers>
-    <TargetFramework>net6</TargetFramework>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <TargetFramework>net7.0</TargetFramework>
     <VersionPrefix>1.1.1</VersionPrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,9 +37,28 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0" />
     <PackageReference Include="BinaryEncoding" Version="1.5.0" />
     <PackageReference Include="Multiformats.Base" Version="2.0.2" />
     <PackageReference Include="Multiformats.Hash" Version="1.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

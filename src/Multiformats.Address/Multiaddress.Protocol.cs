@@ -1,4 +1,5 @@
-﻿namespace Multiformats.Address;
+namespace Multiformats.Address;
+
 using Multiformats.Address.Protocols;
 using System;
 
@@ -13,14 +14,21 @@ public partial class Multiaddress
         /// <param name="type">The type.</param>
         /// <param name="path">if set to <c>true</c> [path].</param>
         /// <param name="factory">The factory.</param>
-        public Protocol(string name, int code, int size, Type type, bool path, Func<object, MultiaddressProtocol> factory)
+        public Protocol(
+            string name,
+            int code,
+            int size,
+            Type type,
+            bool path,
+            Func<object?, MultiaddressProtocol> factory
+        )
         {
-            Name = name;
-            Code = code;
-            Size = size;
-            Type = type;
-            Path = path;
-            Factory = factory;
+            this.Name = name;
+            this.Code = code;
+            this.Size = size;
+            this.Type = type;
+            this.Path = path;
+            this.Factory = factory;
         }
 
         /// <summary>Gets the code.</summary>
@@ -29,7 +37,7 @@ public partial class Multiaddress
 
         /// <summary>Gets the factory.</summary>
         /// <value>The factory.</value>
-        public Func<object, MultiaddressProtocol> Factory { get; }
+        public Func<object?, MultiaddressProtocol> Factory { get; }
 
         /// <summary>Gets the name.</summary>
         /// <value>The name.</value>

@@ -48,10 +48,7 @@ public partial class Multiaddress : IEquatable<Multiaddress>
     }
 
     /// <summary>Initializes a new instance of the <see cref="Multiaddress"/> class.</summary>
-    public Multiaddress()
-    {
-        Protocols = new List<MultiaddressProtocol>();
-    }
+    public Multiaddress() => Protocols = new List<MultiaddressProtocol>();
 
     /// <summary>Gets the protocols.</summary>
     /// <value>The protocols.</value>
@@ -59,23 +56,34 @@ public partial class Multiaddress : IEquatable<Multiaddress>
 
     /// <summary>Decodes the specified value.</summary>
     /// <param name="value">The value.</param>
-    /// <returns></returns>
     public static Multiaddress Decode(string value)
     {
-        return new Multiaddress().Add(DecodeProtocols(value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)).ToArray());
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return new Multiaddress();
+        }
+
+        var address = DecodeProtocols(value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)).ToArray();
+        return address is null || address.Length == 0
+            ? new Multiaddress()
+            : new Multiaddress().Add(address!);
     }
 
     /// <summary>Decodes the specified bytes.</summary>
     /// <param name="bytes">The bytes.</param>
-    /// <returns></returns>
     public static Multiaddress Decode(byte[] bytes)
     {
-        return new Multiaddress().Add(DecodeProtocols(bytes).ToArray());
+        if (bytes.Length == 0)
+        {
+            return new Multiaddress();
+        }
+
+        var address = DecodeProtocols(bytes).ToArray();
+        return new Multiaddress().Add(address!);
     }
 
     /// <summary>Joins the specified addresses.</summary>
     /// <param name="addresses">The addresses.</param>
-    /// <returns></returns>
     public static Multiaddress Join(IEnumerable<Multiaddress> addresses)
     {
         Multiaddress result = new();
@@ -90,26 +98,20 @@ public partial class Multiaddress : IEquatable<Multiaddress>
     /// <summary>Adds the specified value.</summary>
     /// <typeparam name="TProtocol">The type of the protocol.</typeparam>
     /// <param name="value">The value.</param>
-    /// <returns></returns>
-    public Multiaddress Add<TProtocol>(object value)
+    public Multiaddress Add<TProtocol>(object? value)
         where TProtocol : MultiaddressProtocol
     {
-        Protocol proto = _protocols.SingleOrDefault(p => p.Type == typeof(TProtocol));
+        Protocol? proto = _protocols.Single(p => p.Type == typeof(TProtocol));
         Protocols.Add(proto.Factory(value));
         return this;
     }
 
     /// <summary>Adds this instance.</summary>
     /// <typeparam name="TProtocol">The type of the protocol.</typeparam>
-    /// <returns></returns>
-    public Multiaddress Add<TProtocol>() where TProtocol : MultiaddressProtocol
-    {
-        return Add<TProtocol>(null);
-    }
+    public Multiaddress Add<TProtocol>() where TProtocol : MultiaddressProtocol => Add<TProtocol>(null);
 
     /// <summary>Adds the specified protocols.</summary>
     /// <param name="protocols">The protocols.</param>
-    /// <returns></returns>
     public Multiaddress Add(params MultiaddressProtocol[] protocols)
     {
         Protocols.AddRange(protocols);
@@ -118,7 +120,6 @@ public partial class Multiaddress : IEquatable<Multiaddress>
 
     /// <summary>Decapsulates the specified address.</summary>
     /// <param name="address">The address.</param>
-    /// <returns></returns>
     public Multiaddress Decapsulate(Multiaddress address)
     {
         return new Multiaddress()
@@ -127,7 +128,6 @@ public partial class Multiaddress : IEquatable<Multiaddress>
 
     /// <summary>Encapsulates the specified address.</summary>
     /// <param name="address">The address.</param>
-    /// <returns></returns>
     public Multiaddress Encapsulate(Multiaddress address)
     {
         return new Multiaddress()
@@ -141,34 +141,24 @@ public partial class Multiaddress : IEquatable<Multiaddress>
     /// <returns>
     ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals(object obj)
-    {
-        return Equals((Multiaddress)obj);
-    }
+    public override bool Equals(object? obj) => Equals((Multiaddress?)obj);
 
     /// <summary>Indicates whether the current object is equal to another object of the same type.</summary>
     /// <param name="other">An object to compare with this object.</param>
     /// <returns>
     ///   <see langword="true" /> if the current object is equal to the <paramref name="other" /> parameter; otherwise, <see langword="false" />.
     /// </returns>
-    public bool Equals(Multiaddress other)
-    {
-        return other is not null && ToBytes().SequenceEqual(other.ToBytes());
-    }
+    public bool Equals(Multiaddress? other) => other is not null && ToBytes().SequenceEqual(other.ToBytes());
 
     /// <summary>Gets this instance.</summary>
     /// <typeparam name="TProtocol">The type of the protocol.</typeparam>
-    /// <returns></returns>
-    public TProtocol Get<TProtocol>() where TProtocol : MultiaddressProtocol
-    {
-        return Protocols.OfType<TProtocol>().SingleOrDefault();
-    }
+    public TProtocol? Get<TProtocol>() where TProtocol : MultiaddressProtocol => Protocols.OfType<TProtocol>().SingleOrDefault();
 
     /// <summary>Removes this instance.</summary>
     /// <typeparam name="TProtocol">The type of the protocol.</typeparam>
     public void Remove<TProtocol>() where TProtocol : MultiaddressProtocol
     {
-        TProtocol protocol = Get<TProtocol>();
+        TProtocol? protocol = Get<TProtocol>();
         if (protocol is not null)
         {
             _ = Protocols.Remove(protocol);
@@ -176,38 +166,22 @@ public partial class Multiaddress : IEquatable<Multiaddress>
     }
 
     /// <summary>Splits this instance.</summary>
-    /// <returns></returns>
-    public IEnumerable<Multiaddress> Split()
-    {
-        return Protocols.Select(p => new Multiaddress().Add(p));
-    }
+    public IEnumerable<Multiaddress> Split() => Protocols.Select(p => new Multiaddress().Add(p));
 
     /// <summary>Converts to bytes.</summary>
-    /// <returns></returns>
-    public byte[] ToBytes()
-    {
-        return Protocols.SelectMany(EncodeProtocol).ToArray();
-    }
+    public byte[] ToBytes() => Protocols.SelectMany(EncodeProtocol).ToArray();
 
     /// <summary>Converts to string.</summary>
     /// <returns>A <see cref="string" /> that represents this instance.</returns>
-    public override string ToString()
-    {
-        return Protocols.Count > 0 ? "/" + string.Join("/", Protocols.SelectMany(ProtocolToStrings)) : string.Empty;
-    }
+    public override string ToString() => Protocols.Count > 0 ? "/" + string.Join("/", Protocols.SelectMany(ProtocolToStrings)) : string.Empty;
 
-    private static MultiaddressProtocol CreateProtocol(string name)
-    {
-        return _protocols.SingleOrDefault(p => p.Name == name)?.Factory(null);
-    }
+    private static MultiaddressProtocol? CreateProtocol(string name) => _protocols.SingleOrDefault(p => p.Name == name)?.Factory(null);
 
-    private static MultiaddressProtocol CreateProtocol(int code)
-    {
-        return _protocols.SingleOrDefault(p => p.Code == code)?.Factory(null);
-    }
+    private static MultiaddressProtocol? CreateProtocol(int code) => _protocols.SingleOrDefault(p => p.Code == code)?.Factory(null);
 
     private static int DecodeProtocol(MultiaddressProtocol protocol, byte[] bytes, int offset)
     {
+        ArgumentNullException.ThrowIfNull(protocol, nameof(protocol));
         int start = offset;
         int count = 0;
         if (protocol.Size > 0)
@@ -222,14 +196,14 @@ public partial class Multiaddress : IEquatable<Multiaddress>
 
         if (count > 0)
         {
-            protocol.Decode(bytes.Slice(offset, count));
+            protocol.Decode(bytes.AsSpan().Slice(offset, count).ToArray());
             offset += count;
         }
 
         return offset - start;
     }
 
-    private static IEnumerable<MultiaddressProtocol> DecodeProtocols(params string[] parts)
+    private static IEnumerable<MultiaddressProtocol?> DecodeProtocols(params string[] parts)
     {
         for (int i = 0; i < parts.Length; i++)
         {
@@ -238,22 +212,22 @@ public partial class Multiaddress : IEquatable<Multiaddress>
                 throw new NotSupportedException(parts[i]);
             }
 
-            MultiaddressProtocol protocol = CreateProtocol(parts[i]);
-            if (protocol.Size != 0)
+            MultiaddressProtocol? protocol = CreateProtocol(parts[i]);
+            if (protocol?.Size != 0)
             {
                 if (i + 1 >= parts.Length)
                 {
                     throw new Exception("Required parameter not found");
                 }
 
-                if (_protocols.SingleOrDefault(p => p.Code == protocol.Code).Path)
+                if (_protocols.Single(p => p.Code == protocol?.Code).Path)
                 {
-                    protocol.Decode(string.Join("/", parts.Slice(i + 1)));
+                    protocol?.Decode(string.Join("/", parts.AsSpan()[(i + 1)..].ToArray()));
                     i = parts.Length - 1;
                 }
                 else
                 {
-                    protocol.Decode(parts[++i]);
+                    protocol?.Decode(parts[++i]);
                 }
             }
 
@@ -261,7 +235,7 @@ public partial class Multiaddress : IEquatable<Multiaddress>
         }
     }
 
-    private static IEnumerable<MultiaddressProtocol> DecodeProtocols(byte[] bytes)
+    private static IEnumerable<MultiaddressProtocol?> DecodeProtocols(byte[] bytes)
     {
         int offset = 0;
         while (offset < bytes.Length)
@@ -269,7 +243,7 @@ public partial class Multiaddress : IEquatable<Multiaddress>
             offset += ParseProtocolCode(bytes, offset, out short code);
             if (SupportsProtocol(code))
             {
-                offset += ParseProtocol(bytes, offset, code, out MultiaddressProtocol protocol);
+                offset += ParseProtocol(bytes, offset, code, out MultiaddressProtocol? protocol);
 
                 yield return protocol;
             }
@@ -297,10 +271,11 @@ public partial class Multiaddress : IEquatable<Multiaddress>
         return code.Concat(prefix).Concat(bytes);
     }
 
-    private static int ParseProtocol(byte[] bytes, int offset, short code, out MultiaddressProtocol protocol)
+    private static int ParseProtocol(byte[] bytes, int offset, short code, out MultiaddressProtocol? protocol)
     {
         int start = offset;
         protocol = CreateProtocol(code);
+        ArgumentNullException.ThrowIfNull(protocol);
         offset += DecodeProtocol(protocol, bytes, offset);
         return offset - start;
     }
@@ -311,7 +286,7 @@ public partial class Multiaddress : IEquatable<Multiaddress>
         return 2;
     }
 
-    private static IEnumerable<string> ProtocolToStrings(MultiaddressProtocol p)
+    private static IEnumerable<string?> ProtocolToStrings(MultiaddressProtocol p)
     {
         yield return p.Name;
         if (p.Value is not null)
@@ -320,19 +295,13 @@ public partial class Multiaddress : IEquatable<Multiaddress>
         }
     }
 
-    private static void Setup<TProtocol>(string name, int code, int size, bool path, Func<object, MultiaddressProtocol> factory)
-        where TProtocol : MultiaddressProtocol
-    {
-        _protocols.Add(new Protocol(name, code, size, typeof(TProtocol), path, factory));
-    }
+    private static void Setup<TProtocol>(string name, int code, int size, bool path, Func<object?, MultiaddressProtocol> factory)
+        where TProtocol : MultiaddressProtocol => _protocols.Add(new Protocol(name, code, size, typeof(TProtocol), path, factory));
 
-    private static bool SupportsProtocol(string name)
-    {
-        return _protocols.Any(p => p.Name.Equals(name));
-    }
+    private static bool SupportsProtocol(string name) => _protocols.Any(p => p.Name.Equals(name));
 
-    private static bool SupportsProtocol(int code)
-    {
-        return _protocols.Any(p => p.Code.Equals(code));
-    }
+    private static bool SupportsProtocol(int code) => _protocols.Any(p => p.Code.Equals(code));
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => base.GetHashCode();
 }

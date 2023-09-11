@@ -1,48 +1,46 @@
 namespace Multiformats.Address.Protocols;
+
 using System;
 
-public abstract class MultiaddressProtocol : IEquatable<MultiaddressProtocol>
+/// <summary>
+/// Represents a Multiaddress protocol.
+/// </summary>
+public abstract record MultiaddressProtocol(
+    string Name,
+    int Code,
+    int Size)
 {
-    public string Name { get; }
-    public int Code { get; }
-    public int Size { get; }
-    public object Value { get; protected set; }
+    /// <summary>
+    /// Property to get and set the value of an object.
+    /// </summary>
+    public object? Value { get; protected set; }
 
-    protected static readonly byte[] EmptyBuffer = new byte[] { };
+    /// <summary>
+    /// An empty buffer
+    /// </summary>
+    protected static readonly byte[] EmptyBuffer = Array.Empty<byte>();
 
-    protected MultiaddressProtocol(string name, int code, int size)
-    {
-        Name = name;
-        Code = code;
-        Size = size;
-    }
-
+    /// <summary>
+    /// Decodes the specified value.
+    /// </summary>
+    /// <param name="value">The value to decode.</param>
     public abstract void Decode(string value);
+
+    /// <summary>
+    /// Decodes a byte array into a meaningful representation.
+    /// </summary>
     public abstract void Decode(byte[] bytes);
+
+    /// <summary>
+    /// Converts the object to a byte array.
+    /// </summary>
     public abstract byte[] ToBytes();
 
-    public bool Equals(MultiaddressProtocol other)
-    {
-        bool eq = Name.Equals(other.Name) &&
-               Code.Equals(other.Code) &&
-               Size.Equals(other.Size) &&
-               Value.Equals(other.Value);
-
-        return eq;
-    }
-
-    public override bool Equals(object obj)
-    {
-        return Equals((MultiaddressProtocol)obj);
-    }
-
-    public override string ToString()
-    {
-        return Value?.ToString() ?? string.Empty;
-    }
-
-    public override int GetHashCode()
-    {
-        return Value?.GetHashCode() ?? Code ^ Size;
-    }
+    /// <summary>
+    /// Returns the string representation of the Value property, or an empty string if Value is null.
+    /// </summary>
+    /// <returns>
+    /// The string representation of the Value property, or an empty string if Value is null.
+    /// </returns>
+    public override string ToString() => this.Value?.ToString() ?? string.Empty;
 }
