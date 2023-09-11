@@ -11,7 +11,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/multiformats/cs-multiaddress/master.svg?style=flat-square)](https://codecov.io/gh/multiformats/cs-multiaddress)
 [![Libraries.io](https://img.shields.io/librariesio/github/multiformats/cs-multiaddress.svg?style=flat-square)](https://libraries.io/github/multiformats/cs-multiaddress)
 
-> [Multiaddr](https://github.com/multiformats/multiaddr) implementation in C# .NET Standard 1.6 compliant.
+> [Multiaddr](https://github.com/multiformats/multiaddr) implementation in C# .NET 7.
 
 ## Table of Contents
 
